@@ -33,6 +33,30 @@
 
 ### 计划
 
-20180622 梳理数据, 搞清楚数据各个字段的含义; 搞清楚评价标准; 初步思考数据清洗策略.
-20180623 - 0624 了解业界的经典方法, 以及state-of-the-art所能达到的水平.
-20180625 - 0629 实现模型, 两个账号分别实现第一次有效提交.
+- 20180622 梳理数据, 搞清楚数据各个字段的含义; 搞清楚评价标准; 初步思考数据清洗策略.
+- 20180623 - 0624 了解业界的经典方法, 以及state-of-the-art所能达到的水平.
+- 20180625 - 0629 实现模型, 两个账号分别实现第一次有效提交.
+
+## 20180622
+
+- `application_{train|test}.csv`
+    + 申请人原始资料
+    + 原始数据高维, 稀疏, 有大量缺失值; *是否可以参考蚂蚁金服的做法, 使用周志华的deep forest作为模型?*
+    + 训练数据集30w+条数据, 训练数据集4.8w+条数据; *考虑是否需要借助数据库进行数据管理*
+- `bureau.csv`
+    + 其他金融机构提供给信用管理机构的数据
+- `bureau_balances.csv`
+    + 申请人月度信用记录
+    + 可以考虑抽取序列特征
+- `POS_CASH_balance.csv`
+    + 现金账单收支平衡
+- `credit_card_balance.csv`
+    + 信用卡收支平衡
+- `previous_application.csv`
+    + 历史申请记录
+- `installments_payments.csv`
+    + 历史还款记录
+- `HomeCredit_columns_description.csv`
+    + **原始数据每一列的解释, 有助于建立特征工程.**
+
+![img](https://storage.googleapis.com/kaggle-media/competitions/home-credit/home_credit.png)
