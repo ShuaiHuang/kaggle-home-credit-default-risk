@@ -60,3 +60,17 @@
     + **原始数据每一列的解释, 有助于建立特征工程.**
 
 ![img](https://storage.googleapis.com/kaggle-media/competitions/home-credit/home_credit.png)
+
+## 20180624
+
+- 业界内常用模型
+    + GBDT / MART
+    + XGBOOST
+        + [XGBOOST浅入浅出](http://wepon.me/2016/05/07/XGBoost%E6%B5%85%E5%85%A5%E6%B5%85%E5%87%BA/)
+        + [XGBOOST与Boosted Tree](http://www.52cs.org/?p=429)
+        + [开源代码](https://xgboost.readthedocs.io/en/latest/)
+    + Deep Forest
+        + [论文](https://arxiv.org/pdf/1702.08835.pdf)
+        + [开源代码](http://lamda.nju.edu.cn/code_gcForest.ashx)
+- 计划本周内使用上述三种模型, 在两个账号上分别进行首次有效提交.
+- 后续依据特征工程以及模型训练效果, 使用单个模型或者使用stacking方法进行结果融合.
