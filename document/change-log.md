@@ -74,3 +74,9 @@
         + [开源代码](http://lamda.nju.edu.cn/code_gcForest.ashx)
 - 计划本周内使用上述三种模型, 在两个账号上分别进行首次有效提交.
 - 后续依据特征工程以及模型训练效果, 使用单个模型或者使用stacking方法进行结果融合.
+
+## 20180630
+
+- Ubuntu系统中将`xgboost`安装到`anaconda`环境的方法
+    + 按照[说明](https://github.com/dmlc/xgboost/tree/master/python-package)编译`xgboost`
+    + 执行`setup.py`脚本时, 使用`sudo ~/anaconda3/envs/py3/bin/python3 setup.py install`进行安装(因为`steup.py`默认调用的是系统的python解释器, 尽管使用`which python时看到的是anaconda的解释器`)
