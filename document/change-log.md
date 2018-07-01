@@ -80,3 +80,10 @@
 - Ubuntu系统中将`xgboost`安装到`anaconda`环境的方法
     + 按照[说明](https://github.com/dmlc/xgboost/tree/master/python-package)编译`xgboost`
     + 执行`setup.py`脚本时, 使用`sudo ~/anaconda3/envs/py3/bin/python3 setup.py install`进行安装(因为`steup.py`默认调用的是系统的python解释器, 尽管使用`which python时看到的是anaconda的解释器`)
+
+## 20180701
+
+- `xgboost`方法与传统`boost`方法的区别在于
+    + 将分类器启发式`heuristic`生成过程等价替换成目标式`objective`
+    + 将CART树的属性分类过程目标函数中引入预剪枝策略
+    + `xgboost`的并行化是在特征粒度上的并行化
