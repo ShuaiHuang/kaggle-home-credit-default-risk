@@ -68,6 +68,7 @@
     + XGBOOST
         + [XGBOOST浅入浅出](http://wepon.me/2016/05/07/XGBoost%E6%B5%85%E5%85%A5%E6%B5%85%E5%87%BA/)
         + [XGBOOST与Boosted Tree](http://www.52cs.org/?p=429)
+        + [XGBOOST slide](https://homes.cs.washington.edu/~tqchen/pdf/BoostedTree.pdf)
         + [开源代码](https://xgboost.readthedocs.io/en/latest/)
     + Deep Forest
         + [论文](https://arxiv.org/pdf/1702.08835.pdf)
