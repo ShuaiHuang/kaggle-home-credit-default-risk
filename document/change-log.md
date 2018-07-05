@@ -88,3 +88,9 @@
     + 将分类器启发式`heuristic`生成过程等价替换成目标式`objective`
     + 将CART树的属性分类过程目标函数中引入预剪枝策略
     + `xgboost`的并行化是在特征粒度上的并行化
+
+## 20180705
+
+- 不错的数据入门介绍, 可以在此基础上进行拓展
+    + 数据预处理[Start Here: A Gentle Introduction](https://www.kaggle.com/willkoehrsen/start-here-a-gentle-introduction)
+    + 特征工程 [Introduction to Manual Feature Engineering](https://www.kaggle.com/willkoehrsen/introduction-to-manual-feature-engineering)
