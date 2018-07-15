@@ -37,7 +37,6 @@ EDA是对**真实数据**进行深入认识的套路. 通常从以下几个方�
 - NAME_EDUCATION_TYPE
 - CNT_CHILDREN
 - CNT_FAM_MEMBERS
-- OCCUPATION_TYPE
 - NAME_FAMILY_STATUS
 
 #### 申请者联系方式
@@ -59,6 +58,7 @@ EDA是对**真实数据**进行深入认识的套路. 通常从以下几个方�
 - FLAG_WORK_PHONE
 - ORGANIZATION_TYPE
 - NAME_INCOME_TYPE
+- OCCUPATION_TYPE
 
 #### 申请者房产情况
 
