@@ -94,3 +94,9 @@
 - 不错的数据入门介绍, 可以在此基础上进行拓展
     + 数据预处理[Start Here: A Gentle Introduction](https://www.kaggle.com/willkoehrsen/start-here-a-gentle-introduction)
     + 特征工程 [Introduction to Manual Feature Engineering](https://www.kaggle.com/willkoehrsen/introduction-to-manual-feature-engineering)
+
+## 20180714
+
+- 配置好`gcForest`环境: 为了保证版本兼容性, 在`Anaconda`基于`Python 3.5`版本配置了全新的环境. `gcForest`工程目录下的`requirement.txt`中所要求的安装包除了`argparse`都进行了安装. `argparse`要求的Python版本号是2.6, 在3.5版本中得到了支持, 因此跑示例程序的时候没有报错.
+- 按照不同的粒度整理`application_{train|test}.csv`表格中的特征, 并进行进一步的数据清洗. 具体清理结果参见[这里](./exploratory-data-analysis.md).
+- 看到一片关于特征选择的[知乎文章](https://zhuanlan.zhihu.com/p/39695931), 其中介绍了[Feature Selector](https://github.com/WillKoehrsen/feature-selector)这个工具箱.
