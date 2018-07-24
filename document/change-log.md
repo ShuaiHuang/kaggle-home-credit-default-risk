@@ -100,3 +100,10 @@
 - 配置好`gcForest`环境: 为了保证版本兼容性, 在`Anaconda`基于`Python 3.5`版本配置了全新的环境. `gcForest`工程目录下的`requirement.txt`中所要求的安装包除了`argparse`都进行了安装. `argparse`要求的Python版本号是2.6, 在3.5版本中得到了支持, 因此跑示例程序的时候没有报错.
 - 按照不同的粒度整理`application_{train|test}.csv`表格中的特征, 并进行进一步的数据清洗. 具体清理结果参见[这里](./exploratory-data-analysis.md).
 - 看到一片关于特征选择的[知乎文章](https://zhuanlan.zhihu.com/p/39695931), 其中介绍了[Feature Selector](https://github.com/WillKoehrsen/feature-selector)这个工具箱.
+
+## 20180724
+
+- 完成主表的数据清洗以及数值化操作, 所有的缺失值均使用`np.nan`进行填充.
+- 下一步计划
+    1. 分隔训练集以及验证集
+    2. 使用`xgboost`进行训练
