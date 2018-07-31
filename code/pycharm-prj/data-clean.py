@@ -31,8 +31,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-
-FLAGS = None
+import logging
 
 class DataCleaner(object):
     def __init__(self, data_dir, app_train, app_test,
@@ -50,269 +49,60 @@ class DataCleaner(object):
         self.__previous_app = previous_app
         self.__output_dir = output_dir
 
-    def clean_app_train(self):
+    def clean_data(self):
         user_df = pd.read_csv(os.path.join(self.__data_dir, self.__app_train))
-        cleaned_df = user_df.loc[:, ['SK_ID_CURR', 'TARGET']].copy()
+        cleaned_df = user_df.loc[:, ['SK_ID_CURR', 'TARGET']].copy().astype(np.float64)
+        cleaned_df = self.clean_app_info(user_df, cleaned_df)
 
-        PER_FAM_FACTORS = ['SK_ID_CURR', 'TARGET', 'CODE_GENDER',
-                           'DAYS_BIRTH', 'DAYS_REGISTRATION', 'DAYS_ID_PUBLISH',
-                           'NAME_EDUCATION_TYPE', 'CNT_CHILDREN', 'CNT_FAM_MEMBERS',
-                           'NAME_FAMILY_STATUS']
+    def discretize_column(self, column, replace_nan=False):
+        assert isinstance(column, pd.Series), "Invalid column type: %s"%(type(column),)
+        str_values = column.loc[column.notnull()].unique()
+        numeric_values = list(range(len(str_values)))
+        column = column.replace(str_values, numeric_values).astype(np.float32)
+        if replace_nan:
+            column = column.fillna(-1)
+        column = column.astype(np.float64)
+        logging.debug("[%s] %s -> %s"%(column.name, str_values, numeric_values,))
+        logging.debug("[%s] replace_nan: %r"%(column.name, replace_nan,))
+        return column
 
+    def clean_app_info(self, user_df, cleaned_df):
+        assert isinstance(user_df, pd.DataFrame) and isinstance(cleaned_df, pd.DataFrame)
+        logging.debug("clean_app_info begin...")
 
-        print('-' * 100)
-        print(user_df.loc[user_df['DAYS_BIRTH'] > user_df['DAYS_REGISTRATION'], ['SK_ID_CURR', 'TARGET', 'DAYS_BIRTH', 'DAYS_REGISTRATION']])
-        print('-' * 100)
-        print(user_df.loc[user_df['DAYS_BIRTH'] > user_df['DAYS_ID_PUBLISH'], ['SK_ID_CURR', 'TARGET', 'DAYS_BIRTH', 'DAYS_ID_PUBLISH']])
-        print('-' * 100)
-        print(user_df.loc[user_df['CNT_FAM_MEMBERS'] < user_df['CNT_CHILDREN'], ['SK_ID_CURR', 'TARGET', 'CNT_FAM_MEMBERS', 'CNT_CHILDREN']])
-        print('-' * 100)
+        cleaned_df.loc[:, 'CODE_GENDER'] = self.discretize_column(user_df['CODE_GENDER'].replace(['XNA'], [np.nan]))
+        cleaned_df.loc[:, 'DAYS_BIRTH'] = -user_df['DAYS_BIRTH'].astype(np.float64)
+        cleaned_df.loc[:, 'DAYS_REGISTRATION'] = -user_df['DAYS_REGISTRATION'].astype(np.float64)
+        cleaned_df.loc[:, 'DAYS_ID_PUBLISH'] = -user_df['DAYS_ID_PUBLISH'].astype(np.float64)
+        cleaned_df.loc[:, 'NAME_EDUCATION_TYPE'] = self.discretize_column(user_df['NAME_EDUCATION_TYPE'])
+        cleaned_df.loc[:, 'CNT_CHILDREN'] = user_df['CNT_CHILDREN'].astype(np.float64)
+        cleaned_df.loc[:, 'CNT_FAM_MEMBERS'] = user_df['CNT_FAM_MEMBERS'].fillna(np.nan).astype(np.float64)
+        cleaned_df.loc[:, 'NAME_FAMILY_STATUS'] = self.discretize_column(user_df['NAME_FAMILY_STATUS'])
 
+        cleaned_df.loc[:, 'FLAG_MOBIL'] = user_df['FLAG_MOBIL'].astype(np.float64)
+        cleaned_df.loc[:, 'FLAG_PHONE'] = user_df['FLAG_PHONE'].astype(np.float64)
+        cleaned_df.loc[:, 'FLAG_EMAIL'] = user_df['FLAG_EMAIL'].astype(np.float64)
+        cleaned_df.loc[:, 'FLAG_CONT_MOBILE'] = user_df['FLAG_CONT_MOBILE'].astype(np.float64)
 
-        # ### CODE_GENDER
-        #
-        # - 'M' - 0
-        # - 'F' - 1
-        # - 'XNA' - `np.nan`
-        user_df.loc[:, 'CODE_GENDER'].unique()
-        cleaned_df.loc[:, 'CODE_GENDER'] = user_df['CODE_GENDER'].replace(['M', 'F', 'XNA'], [0, 1, np.nan])
+        cleaned_df.loc[:, 'FLAG_OWN_CAR'] = self.discretize_column(user_df['FLAG_OWN_CAR'])
+        cleaned_df.loc[:, 'OWN_CAR_AGE'] = user_df['OWN_CAR_AGE'].astype(np.float64)
 
-        # ### DAYS_BIRTH
-        cleaned_df.loc[:, 'DAYS_BIRTH'] = -user_df['DAYS_BIRTH']
+        cleaned_df.loc[:, 'DAYS_EMPLOYED'] = -(user_df['DAYS_EMPLOYED'].replace(365243, np.nan)).astype(np.float64)
+        cleaned_df.loc[:, 'FLAG_EMP_PHONE'] = user_df['FLAG_EMP_PHONE'].astype(np.float64)
+        cleaned_df.loc[:, 'FLAG_WORK_PHONE'] = user_df['FLAG_WORK_PHONE'].astype(np.float64)
+        cleaned_df.loc[:, 'ORGANIZATION_TYPE'] = self.discretize_column(user_df['ORGANIZATION_TYPE'].replace(['XNA'], [np.nan]))
+        cleaned_df.loc[:, 'NAME_INCOME_TYPE'] = self.discretize_column(user_df['NAME_INCOME_TYPE'])
+        cleaned_df.loc[:, 'AMT_INCOME_TOTAL'] = user_df['AMT_INCOME_TOTAL'].astype(np.float64)
+        cleaned_df.loc[:, 'OCCUPATION_TYPE'] = self.discretize_column(user_df['OCCUPATION_TYPE'])
 
-        # ### DAYS_REGISTRATION
-        cleaned_df.loc[:, 'DAYS_REGISTRATION'] = -user_df['DAYS_REGISTRATION']
+        cleaned_df.loc[:, 'FLAG_OWN_REALTY'] = self.discretize_column(user_df['FLAG_OWN_REALTY'])
+        cleaned_df.loc[:, 'NAME_HOUSING_TYPE'] = self.discretize_column(user_df['NAME_HOUSING_TYPE'])
+        cleaned_df.loc[:, 'FONDKAPREMONT_MODE'] = self.discretize_column(user_df['FONDKAPREMONT_MODE'])
+        cleaned_df.loc[:, 'HOUSETYPE_MODE'] = self.discretize_column(user_df['HOUSETYPE_MODE'])
+        cleaned_df.loc[:, 'TOTALAREA_MODE'] = user_df['TOTALAREA_MODE'].fillna(np.nan).astype(np.float64)
+        cleaned_df.loc[:, 'WALLSMATERIAL_MODE'] = self.discretize_column(user_df['WALLSMATERIAL_MODE'])
+        cleaned_df.loc[:, 'EMERGENCYSTATE_MODE'] = self.discretize_column(user_df['EMERGENCYSTATE_MODE'])
 
-        # ### DAYS_ID_PUBLISH
-        cleaned_df.loc[:, 'DAYS_ID_PUBLISH'] = -user_df['DAYS_ID_PUBLISH']
-
-        # ### NAME_EDUCATION_TYPE
-        #
-        # - `Secondary / secondary special` - 0
-        # - `Higher education` - 1
-        # - `Incomplete higher` - 2
-        # - `Lower secondary` - 3
-        # - `Academic degree` - 4
-        cleaned_df.loc[:, 'NAME_EDUCATION_TYPE'] = user_df['NAME_EDUCATION_TYPE'].replace(['Secondary / secondary special', 'Higher education', 'Incomplete higher', 'Lower secondary', 'Academic degree'], range(0, 5))
-
-        # ### CNT_CHILDREN
-        cleaned_df.loc[:, 'CNT_CHILDREN'] = user_df['CNT_CHILDREN']
-
-        # ### CNT_FAM_MEMBERS
-        cleaned_df.loc[:, 'CNT_FAM_MEMBERS'] = user_df['CNT_FAM_MEMBERS'].fillna(np.nan)
-
-
-        # ### NAME_FAMILY_STATUS
-        #
-        # - Married 0
-        # - Single / not married 1
-        # - Civil marriage 2
-        # - Separated 3
-        # - Widow 4
-        # - Unknown 5
-        cleaned_df.loc[:, 'NAME_FAMILY_STATUS'] = user_df['NAME_FAMILY_STATUS'].replace(['Married', 'Single / not married', 'Civil marriage', 'Separated', 'Widow', 'Unknown'], [0, 1, 2, 3, 4, np.nan])
-
-        # ## 申请者联系方式
-        #
-        # - FLAG_MOBIL
-        # - FLAG_PHONE
-        # - FLAG_EMAIL
-        # - FLAG_CONT_MOBILE
-        CONTACT_FACTOR = ['FLAG_MOBIL', 'FLAG_PHONE', 'FLAG_EMAIL', 'FLAG_CONT_MOBILE']
-
-        # ### FLAG_MOBIL
-        cleaned_df.loc[:, 'FLAG_MOBIL'] = user_df['FLAG_MOBIL']
-
-        # ### FLAG_PHONE
-        cleaned_df.loc[:, 'FLAG_PHONE'] = user_df['FLAG_PHONE']
-
-        # ### FLAG_EMAIL
-        cleaned_df.loc[:, 'FLAG_EMAIL'] = user_df['FLAG_EMAIL']
-
-        # ### FLAG_CONT_MOBILE
-        cleaned_df.loc[:, 'FLAG_CONT_MOBILE'] = user_df['FLAG_CONT_MOBILE']
-
-        # ## 申请者车辆购置情况
-        #
-        # - FLAG_OWN_CAR
-        # - OWN_CAR_AGE
-
-        # ### FLAG_OWN_CAR
-        #
-        # - N - 0
-        # - Y - 1
-        cleaned_df.loc[:, 'FLAG_OWN_CAR'] = user_df['FLAG_OWN_CAR'].replace(['N', 'Y'], [0, 1])
-
-        # ### OWN_CAR_AGE
-        cleaned_df.loc[:, 'OWN_CAR_AGE'] = user_df['OWN_CAR_AGE'].fillna(np.nan)
-
-        # ## 申请者工作情况
-        #
-        # - DAYS_EMPLOYED
-        # - FLAG_EMP_PHONE
-        # - FLAG_WORK_PHONE
-        # - ORGANIZATION_TYPE
-        # - NAME_INCOME_TYPE
-        # - OCCUPATION_TYPE
-        # - AMT_INCOME_TOTAL
-
-        # ### DAYS_EMPLOYED
-        cleaned_df.loc[:, 'DAYS_EMPLOYED'] = -(user_df['DAYS_EMPLOYED'].replace(365243, np.nan))
-
-        # ### FLAG_EMP_PHONE
-        cleaned_df.loc[:, 'FLAG_EMP_PHONE'] = user_df['FLAG_EMP_PHONE']
-
-        # ### FLAG_WORK_PHONE
-        cleaned_df.loc[:, 'FLAG_WORK_PHONE'] = user_df['FLAG_WORK_PHONE']
-
-        # ### ORGANIZATION_TYPE
-        #
-        # 没有缺失值, 直接映射成数值.
-        cleaned_df.loc[:, 'ORGANIZATION_TYPE'] = user_df['ORGANIZATION_TYPE'].replace(user_df['ORGANIZATION_TYPE'].unique(), range(len(user_df['ORGANIZATION_TYPE'].unique())))
-
-        # ### NAME_INCOME_TYPE
-        #
-        # 没有缺失值, 直接映射成数值.
-        cleaned_df.loc[:, 'NAME_INCOME_TYPE'] = user_df['NAME_INCOME_TYPE'].replace(user_df['NAME_INCOME_TYPE'].unique(), range(len(user_df['NAME_INCOME_TYPE'].unique())))
-
-        # ### AMT_INCOME_TOTAL
-        cleaned_df.loc[:, 'AMT_INCOME_TOTAL'] = user_df['AMT_INCOME_TOTAL']
-
-        # ### OCCUPATION_TYPE
-        occupationType = user_df.loc[user_df['OCCUPATION_TYPE'].notnull(), 'OCCUPATION_TYPE'].unique()
-        cleaned_df.loc[:, 'OCCUPATION_TYPE'] = user_df['OCCUPATION_TYPE'].replace(occupationType, range(len(occupationType)))
-
-        # ## 申请者房产情况
-        #
-        # - FLAG_OWN_REALTY
-        # - NAME_HOUSING_TYPE
-        # - REGION_POPULATION_RELATIVE
-        # - REGION_RATING_CLIENT
-        # - REGION_RATING_CLIENT_W_CITY
-        # - APARTMENTS_AVG
-        # - BASEMENTAREA_AVG
-        # - YEARS_BEGINEXPLUATATION_AVG
-        # - YEARS_BUILD_AVG
-        # - COMMONAREA_AVG
-        # - ELEVATORS_AVG
-        # - ENTRANCES_AVG
-        # - FLOORSMAX_AVG
-        # - FLOORSMIN_AVG
-        # - LANDAREA_AVG
-        # - LIVINGAPARTMENTS_AVG
-        # - LIVINGAREA_AVG
-        # - NONLIVINGAPARTMENTS_AVG
-        # - NONLIVINGAREA_AVG
-        # - APARTMENTS_MODE
-        # - BASEMENTAREA_MODE
-        # - YEARS_BEGINEXPLUATATION_MODE
-        # - YEARS_BUILD_MODE
-        # - COMMONAREA_MODE
-        # - ELEVATORS_MODE
-        # - ENTRANCES_MODE
-        # - FLOORSMAX_MODE
-        # - FLOORSMIN_MODE
-        # - LANDAREA_MODE
-        # - LIVINGAPARTMENTS_MODE
-        # - LIVINGAREA_MODE
-        # - NONLIVINGAPARTMENTS_MODE
-        # - NONLIVINGAREA_MODE
-        # - APARTMENTS_MEDI
-        # - BASEMENTAREA_MEDI
-        # - YEARS_BEGINEXPLUATATION_MEDI
-        # - YEARS_BUILD_MEDI
-        # - COMMONAREA_MEDI
-        # - ELEVATORS_MEDI
-        # - ENTRANCES_MEDI
-        # - FLOORSMAX_MEDI
-        # - FLOORSMIN_MEDI
-        # - LANDAREA_MEDI
-        # - LIVINGAPARTMENTS_MEDI
-        # - LIVINGAREA_MEDI
-        # - NONLIVINGAPARTMENTS_MEDI
-        # - NONLIVINGAREA_MEDI
-        # - FONDKAPREMONT_MODE
-        # - HOUSETYPE_MODE
-        # - TOTALAREA_MODE
-        # - WALLSMATERIAL_MODE
-        # - EMERGENCYSTATE_MODE
-        cleaned_df.loc[:, 'FLAG_OWN_REALTY'] = user_df['FLAG_OWN_REALTY'].replace(['N', 'Y'], [0, 1])
-
-        # ### NAME_HOUSING_TYPE
-        housingType = user_df.loc[user_df['NAME_HOUSING_TYPE'].notnull(), 'NAME_HOUSING_TYPE'].unique()
-        print(housingType)
-        cleaned_df.loc[:, 'NAME_HOUSING_TYPE'] = user_df['NAME_HOUSING_TYPE'].replace(housingType, range(len(housingType)))
-
-        # ### FONDKAPREMONT_MODE
-        fondKapremont = user_df.loc[user_df['FONDKAPREMONT_MODE'].notnull(), 'FONDKAPREMONT_MODE'].unique()
-        print(fondKapremont)
-        cleaned_df.loc[:, 'FONDKAPREMONT_MODE'] = user_df['FONDKAPREMONT_MODE'].replace(fondKapremont, range(len(fondKapremont))).fillna(np.nan)
-
-        # ### HOUSETYPE_MODE
-        houseTypeMode = user_df.loc[user_df['HOUSETYPE_MODE'].notnull(), 'HOUSETYPE_MODE'].unique()
-        print(houseTypeMode)
-        cleaned_df.loc[:, 'HOUSETYPE_MODE'] = user_df['HOUSETYPE_MODE'].replace(houseTypeMode, range(len(houseTypeMode))).fillna(np.nan)
-
-        # ### TOTALAREA_MODE
-        cleaned_df.loc[:, 'TOTALAREA_MODE'] = user_df['TOTALAREA_MODE'].fillna(np.nan)
-
-        # ### WALLSMATERIAL_MODE
-        wallsMaterialMode = user_df.loc[user_df['WALLSMATERIAL_MODE'].notnull(), 'WALLSMATERIAL_MODE'].unique()
-        print(wallsMaterialMode)
-        cleaned_df.loc[:, 'WALLSMATERIAL_MODE'] = user_df['WALLSMATERIAL_MODE'].replace(wallsMaterialMode, range(len(wallsMaterialMode))).fillna(np.nan)
-
-        # ### EMERGENCYSTATE_MODE
-        emergencyStateMode = user_df.loc[user_df['EMERGENCYSTATE_MODE'].notnull(), 'EMERGENCYSTATE_MODE'].unique()
-        print(emergencyStateMode)
-        cleaned_df.loc[:, 'EMERGENCYSTATE_MODE'] = user_df['EMERGENCYSTATE_MODE'].replace(emergencyStateMode, range(len(emergencyStateMode))).fillna(np.nan)
-
-        # ### OTHERS
-        #
-        # - REGION_POPULATION_RELATIVE
-        # - REGION_RATING_CLIENT
-        # - REGION_RATING_CLIENT_W_CITY
-        # - APARTMENTS_AVG
-        # - BASEMENTAREA_AVG
-        # - YEARS_BEGINEXPLUATATION_AVG
-        # - YEARS_BUILD_AVG
-        # - COMMONAREA_AVG
-        # - ELEVATORS_AVG
-        # - ENTRANCES_AVG
-        # - FLOORSMAX_AVG
-        # - FLOORSMIN_AVG
-        # - LANDAREA_AVG
-        # - LIVINGAPARTMENTS_AVG
-        # - LIVINGAREA_AVG
-        # - NONLIVINGAPARTMENTS_AVG
-        # - NONLIVINGAREA_AVG
-        # - APARTMENTS_MODE
-        # - BASEMENTAREA_MODE
-        # - YEARS_BEGINEXPLUATATION_MODE
-        # - YEARS_BUILD_MODE
-        # - COMMONAREA_MODE
-        # - ELEVATORS_MODE
-        # - ENTRANCES_MODE
-        # - FLOORSMAX_MODE
-        # - FLOORSMIN_MODE
-        # - LANDAREA_MODE
-        # - LIVINGAPARTMENTS_MODE
-        # - LIVINGAREA_MODE
-        # - NONLIVINGAPARTMENTS_MODE
-        # - NONLIVINGAREA_MODE
-        # - APARTMENTS_MEDI
-        # - BASEMENTAREA_MEDI
-        # - YEARS_BEGINEXPLUATATION_MEDI
-        # - YEARS_BUILD_MEDI
-        # - COMMONAREA_MEDI
-        # - ELEVATORS_MEDI
-        # - ENTRANCES_MEDI
-        # - FLOORSMAX_MEDI
-        # - FLOORSMIN_MEDI
-        # - LANDAREA_MEDI
-        # - LIVINGAPARTMENTS_MEDI
-        # - LIVINGAREA_MEDI
-        # - NONLIVINGAPARTMENTS_MEDI
-        # - NONLIVINGAREA_MEDI
         realtyFactors = [
             'REGION_POPULATION_RELATIVE',
             'REGION_RATING_CLIENT',
@@ -360,25 +150,10 @@ class DataCleaner(object):
             'NONLIVINGAPARTMENTS_MEDI',
             'NONLIVINGAREA_MEDI']
         for curFactor in realtyFactors:
-            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan)
+            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan).astype(np.float64)
 
-        # ## 风险评估
-        #
-        # - REG_REGION_NOT_LIVE_REGION
-        # - REG_CITY_NOT_LIVE_CITY
-        # - REG_CITY_NOT_WORK_CITY
-        # - LIVE_CITY_NOT_WORK_CITY
-        # - DAYS_LAST_PHONE_CHANGE
-        # - REG_REGION_NOT_WORK_REGION
-        # - LIVE_REGION_NOT_WORK_REGION
-        # - EXT_SOURCE_1
-        # - EXT_SOURCE_2
-        # - EXT_SOURCE_3
+        cleaned_df.loc[:, 'DAYS_LAST_PHONE_CHANGE'] = -(user_df['DAYS_LAST_PHONE_CHANGE']).fillna(np.nan).astype(np.float64)
 
-        # ### DAYS_LAST_PHONE_CHANGE
-        cleaned_df.loc[:, 'DAYS_LAST_PHONE_CHANGE'] = -(user_df['DAYS_LAST_PHONE_CHANGE']).fillna(np.nan)
-
-        # ### OTHERS
         riskFactors = [
             'REG_REGION_NOT_LIVE_REGION',
             'REG_CITY_NOT_LIVE_CITY',
@@ -391,55 +166,11 @@ class DataCleaner(object):
             'EXT_SOURCE_3'
         ]
         for curFactor in riskFactors:
-            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan)
+            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan).astype(np.float64)
 
-        # ## 贷款申请材料
-        #
-        # - NAME_CONTRACT_TYPE
-        # - AMT_CREDIT
-        # - AMT_ANNUITY
-        # - AMT_GOODS_PRICE
-        # - NAME_TYPE_SUITE
-        # - WEEKDAY_APPR_PROCESS_START
-        # - HOUR_APPR_PROCESS_START
-        # - AMT_REQ_CREDIT_BUREAU_HOUR
-        # - AMT_REQ_CREDIT_BUREAU_DAY
-        # - AMT_REQ_CREDIT_BUREAU_WEEK
-        # - AMT_REQ_CREDIT_BUREAU_MON
-        # - AMT_REQ_CREDIT_BUREAU_QRT
-        # - AMT_REQ_CREDIT_BUREAU_YEAR
-        # - FLAG_DOCUMENT_2
-        # - FLAG_DOCUMENT_3
-        # - FLAG_DOCUMENT_4
-        # - FLAG_DOCUMENT_5
-        # - FLAG_DOCUMENT_6
-        # - FLAG_DOCUMENT_7
-        # - FLAG_DOCUMENT_8
-        # - FLAG_DOCUMENT_9
-        # - FLAG_DOCUMENT_10
-        # - FLAG_DOCUMENT_11
-        # - FLAG_DOCUMENT_12
-        # - FLAG_DOCUMENT_13
-        # - FLAG_DOCUMENT_14
-        # - FLAG_DOCUMENT_15
-        # - FLAG_DOCUMENT_16
-        # - FLAG_DOCUMENT_17
-        # - FLAG_DOCUMENT_18
-        # - FLAG_DOCUMENT_19
-        # - FLAG_DOCUMENT_20
-        # - FLAG_DOCUMENT_21
+        cleaned_df.loc[:, 'NAME_CONTRACT_TYPE'] = self.discretize_column(user_df['NAME_CONTRACT_TYPE'])
+        cleaned_df.loc[:, 'NAME_TYPE_SUITE'] = self.discretize_column(user_df['NAME_TYPE_SUITE'])
 
-        # ### NAME_CONTRACT_TYPE
-        contractType = user_df.loc[user_df['NAME_CONTRACT_TYPE'].notnull(), 'NAME_CONTRACT_TYPE'].unique()
-        print(contractType)
-        cleaned_df.loc[:, 'NAME_CONTRACT_TYPE'] = user_df['NAME_CONTRACT_TYPE'].replace(contractType, range(len(contractType))).fillna(np.nan)
-
-        # ### NAME_TYPE_SUITE
-        typeSuite = user_df.loc[user_df['NAME_TYPE_SUITE'].notnull(), 'NAME_TYPE_SUITE'].unique()
-        print(typeSuite)
-        cleaned_df.loc[:, 'NAME_TYPE_SUITE'] = user_df['NAME_TYPE_SUITE'].replace(typeSuite, range(len(typeSuite))).fillna(np.nan)
-
-        # ### WEEKDAY_APPR_PROCESS_START
         weekday = [
             'MONDAY',
             'TUESDAY',
@@ -449,12 +180,12 @@ class DataCleaner(object):
             'SATURDAY',
             'SUNDAY'
         ]
-        cleaned_df.loc[:, 'WEEKDAY_APPR_PROCESS_START'] = user_df['WEEKDAY_APPR_PROCESS_START'].replace(weekday, range(len(weekday))).fillna(np.nan)
+        cleaned_df.loc[:, 'WEEKDAY_APPR_PROCESS_START'] = user_df['WEEKDAY_APPR_PROCESS_START'].replace(weekday, range(
+            len(weekday))).fillna(np.nan).astype(np.float64)
 
-        # ### HOUR_APPR_PROCESS_START
-        cleaned_df.loc[:, 'HOUR_APPR_PROCESS_START'] = user_df['HOUR_APPR_PROCESS_START'].fillna(np.nan)
+        cleaned_df.loc[:, 'HOUR_APPR_PROCESS_START'] = user_df['HOUR_APPR_PROCESS_START'].fillna(np.nan).astype(
+            np.float64)
 
-        # ### OTHERS
         appFactors = [
             'AMT_CREDIT',
             'AMT_ANNUITY',
@@ -487,15 +218,9 @@ class DataCleaner(object):
             'FLAG_DOCUMENT_21'
         ]
         for curFactor in appFactors:
-            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan)
+            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan).astype(np.float64)
 
-        # ## 申请者社交状况
-        #
-        # - OBS_30_CNT_SOCIAL_CIRCLE
-        # - DEF_30_CNT_SOCIAL_CIRCLE
-        # - OBS_60_CNT_SOCIAL_CIRCLE
-        # - DEF_60_CNT_SOCIAL_CIRCLE
-        socialFactors=[
+        socialFactors = [
             'OBS_30_CNT_SOCIAL_CIRCLE',
             'DEF_30_CNT_SOCIAL_CIRCLE',
             'OBS_60_CNT_SOCIAL_CIRCLE',
@@ -503,40 +228,54 @@ class DataCleaner(object):
         ]
 
         for curFactor in socialFactors:
-            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan)
+            cleaned_df.loc[:, curFactor] = user_df[curFactor].fillna(np.nan).astype(np.float64)
 
-        print(cleaned_df)
+        logging.debug("clean_app_info done!")
+        return cleaned_df
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     argParser = argparse.ArgumentParser()
-    argParser.add_argument('--data-dir', type=str,
+    argParser.add_argument('--data_dir', type=str,
                            default='../../data',
                            help='Directory for storing input data')
-    argParser.add_argument('--app-train', type=str,
+    argParser.add_argument('--app_train', type=str,
                            default='application_train.csv',
                            help='File name for application_train')
-    argParser.add_argument('--app-test', type=str,
+    argParser.add_argument('--app_test', type=str,
                            default='application_test.csv',
                            help='File name for application_test')
     argParser.add_argument('--bureau', type=str,
                            default='bereau.csv',
                            help='File name for bereau')
-    argParser.add_argument('--bureau-balance', type=str,
+    argParser.add_argument('--bureau_balance', type=str,
                            default='bureau_balance.csv',
                            help='File name for bereau_balance')
-    argParser.add_argument('--credit-card-balance', type=str,
+    argParser.add_argument('--credit_card_balance', type=str,
                            default='credit_card_balance.csv',
                            help='File name for credit_card_balance')
-    argParser.add_argument('--installments-payments', type=str,
+    argParser.add_argument('--installments_payments', type=str,
                            default='installments_payments.csv',
                            help='File name for installments_payments')
-    argParser.add_argument('--POS-CACHE-balance', type=str,
+    argParser.add_argument('--POS_CACHE_balance', type=str,
                            default='POS_CACHE_balance.csv',
                            help='File name for POS_CACHE_balance')
-    argParser.add_argument('--previous-application', type=str,
+    argParser.add_argument('--previous_application', type=str,
                            default='previous_application.csv',
                            help='File name for previous_application')
-    argParser.add_argument('--output-dir', type=str,
+    argParser.add_argument('--output_dir', type=str,
                            default='../../data/output',
                            help='Directory for storing output data')
     FLAGS, _ = argParser.parse_known_args()
+
+    dataCleaner = DataCleaner(FLAGS.data_dir,
+                              FLAGS.app_train,
+                              FLAGS.app_test,
+                              FLAGS.bureau,
+                              FLAGS.bureau_balance,
+                              FLAGS.credit_card_balance,
+                              FLAGS.installments_payments,
+                              FLAGS.POS_CACHE_balance,
+                              FLAGS.previous_application,
+                              FLAGS.output_dir)
+    dataCleaner.clean_data()
