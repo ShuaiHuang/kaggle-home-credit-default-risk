@@ -5,9 +5,6 @@ import logging
 import argparse
 from sklearn.model_selection import train_test_split
 
-def split_dataset():
-    pass
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     arg_parser = argparse.ArgumentParser()
