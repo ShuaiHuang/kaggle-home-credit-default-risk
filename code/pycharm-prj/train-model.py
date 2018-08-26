@@ -49,10 +49,10 @@ if __name__ == '__main__':
     xgb_params = {
         'booster': 'gbtree',
         'silent': 0,
-        'nthread': 12,
+        'nthread': 6,
         'eta': 0.3,
         'objective': 'binary:logistic',
         'eval_metric': 'auc',
         'seed': 43
     }
-    xgb.cv(xgb_params, train_data, nfold=10, stratified=True)
+    bst = xgb.cv(xgb_params, train_data, nfold=10, stratified=True)

@@ -1,0 +1,97 @@
+{
+  "TreeBooster": {
+    "eta": {
+      "min_value": 0,
+      "max_value": 1,
+      "step_size": 0.5,
+      "scale_type": "linear",
+      "description": "Step size shrinkage used in update to prevents overfitting."
+    },
+    "gamma": {
+      "min_value": 0,
+      "max_value": 10000,
+      "min_index": 0,
+      "max_index": 4,
+      "exp_base": 10,
+      "scale_type": "exp",
+      "description": "Minimum loss reduction required to make a further partition on a leaf node of the tree."
+    },
+    "max_depth": {
+      "min_value": 1,
+      "max_value": 6,
+      "step_size": 3,
+      "scale_type": "linear",
+      "description": "Maximum depth of a tree."
+    },
+    "min_child_weight": {
+      "min_value": 1,
+      "max_value": 10,
+      "step_size": 3,
+      "scale_type": "linear",
+      "description": "Minimum sum of instance weight (hessian) needed in a child."
+    },
+    "max_delta_step": {
+      "min_value": 0,
+      "max_value": 10,
+      "step_size": 3,
+      "scale_type": "linear",
+      "description": "Maximum delta step we allow each leaf output to be."
+    },
+    "subsample": {
+      "min_value": 0.1,
+      "max_value": 1.0,
+      "step_size": 0.3,
+      "scale_type": "linear",
+      "description": "Subsample ratio of the training instances."
+    },
+    "colsample_bytree": {
+      "min_value": 0.1,
+      "max_value": 1.0,
+      "step_size": 0.5,
+      "scale_type": "linear",
+      "description": "Subsample ratio of columns when constructing each tree."
+    },
+    "colsample_bylevel": {
+      "min_value": 0.1,
+      "max_value": 1.0,
+      "step_size": 0.5,
+      "scale_type": "linear",
+      "description": "Subsample ratio of columns for each split, in each level."
+    },
+    "lambda": {
+      "min_value": 1,
+      "max_value": 100,
+      "min_index": 0,
+      "max_index": 6,
+      "exp_base": 3,
+      "scale_type": "exp",
+      "description": "L2 regularization term on weights."
+    },
+    "alpha": {
+      "min_value": 0,
+      "max_value": 100,
+      "min_index": 0,
+      "max_index": 6,
+      "exp_base": 3,
+      "scale_type": "exp",
+      "description": "L1 regularization term on weights."
+    },
+    "tree_method": {
+      "values": ["gpu_exact", "gpu_hist"],
+      "description": "The tree construction algorithm used in XGBoost."
+    }
+  },
+  "LearningTask": {
+    "objective": {
+      "values": ["binary:logistic"]
+    },
+    "eval_metric": {
+      "values": ["auc"]
+    },
+    "seed": {
+      "min_value": 43,
+      "max_value": 43,
+      "scale_type": "linear"
+    }
+  }
+}
