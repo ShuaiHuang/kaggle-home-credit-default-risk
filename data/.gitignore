@@ -2,3 +2,6 @@
 *.zip
 *.npz
 *.np
+*.model
+*.raw.txt
+*.buffer

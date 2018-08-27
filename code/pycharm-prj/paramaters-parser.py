@@ -83,7 +83,7 @@ if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--file_path',
                             type=str,
-                            default='./param-list.json',
+                            default='../../data/input/param-list.json',
                             help='json file storing parameters')
     FLAGS, _ = arg_parser.parse_known_args()
 

@@ -41,12 +41,12 @@ class DataCleaner(object):
         assert isinstance(train_df, pd.DataFrame) and isinstance(test_df, pd.DataFrame)
         train_data_frame_filename = os.path.join(self.__output_dir, "cleaned_train.csv")
         logging.debug("saving %s"%(train_data_frame_filename,))
-        train_df.to_csv(train_data_frame_filename)
+        train_df.to_csv(train_data_frame_filename, index=False)
         logging.debug("done!")
 
         test_data_frame_filename = os.path.join(self.__output_dir, "cleaned_test.csv")
         logging.debug("saving %s"%(test_data_frame_filename,))
-        test_df.to_csv(test_data_frame_filename)
+        test_df.to_csv(test_data_frame_filename, index=False)
         logging.debug("done!")
 
         train_np_filename = os.path.join(self.__output_dir, "cleaned_train.npz")

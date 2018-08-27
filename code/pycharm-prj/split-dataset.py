@@ -21,18 +21,19 @@ if __name__ == '__main__':
     FLAGS, _ = arg_parser.parse_known_args()
 
     train_df = pd.read_csv(os.path.join(FLAGS.data_dir, FLAGS.train_file))
+    logging.debug(train_df.columns)
 
     splited_train_data, splited_validate_data =\
         train_test_split(train_df, test_size=0.01, random_state=43)
 
     splited_train_file = os.path.join(FLAGS.data_dir, "splited_train.csv")
     logging.debug("saving %s"%(splited_train_file,))
-    splited_train_data.to_csv(splited_train_file)
+    splited_train_data.to_csv(splited_train_file, index=False)
     logging.debug("done!")
 
     splited_validate_file = os.path.join(FLAGS.data_dir, "splited_validate.csv")
     logging.debug("saving %s"%(splited_validate_file,))
-    splited_validate_data.to_csv(splited_validate_file)
+    splited_validate_data.to_csv(splited_validate_file, index=False)
     logging.debug("done!")
 
     logging.debug("splited_train_data size: %d*%d, splited_validate_data size:%d*%d"%(splited_train_data.shape + splited_validate_data.shape))
